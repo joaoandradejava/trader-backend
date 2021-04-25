@@ -27,6 +27,10 @@ import com.joaoandrade.traderexercicio.api.model.AcaoModel;
 import com.joaoandrade.traderexercicio.domain.model.Acao;
 import com.joaoandrade.traderexercicio.domain.service.crud.CadastroAcaoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Acao Controller")
 @RestController
 @RequestMapping("/acoes")
 public class AcaoController {
@@ -40,6 +44,7 @@ public class AcaoController {
 	@Autowired
 	private AcaoInputDisassembler acaoInputDisassembler;
 
+	@Operation(summary = "Buscar todas as ações", description = "Busca todas as ações do banco de dados")
 	@GetMapping
 	public List<AcaoModel> buscarTodos() {
 		List<Acao> lista = cadastroAcaoService.buscarTodos();
@@ -47,6 +52,7 @@ public class AcaoController {
 		return acaoModelAssembler.toCollectionModel(lista);
 	}
 
+	@Operation(summary = "Buscar todas as ações por paginação", description = "Busca todas as ações do banco de dados por paginação")
 	@GetMapping("/paginacao")
 	public Page<AcaoModel> buscarTodosPorPaginacao(Pageable pageable, String nome) {
 		Page<Acao> page;
@@ -64,6 +70,7 @@ public class AcaoController {
 		return page.map(acao -> acaoModelAssembler.toModel(acao));
 	}
 
+	@Operation(summary = "Buscar uma ação por id", description = "Busca uma ação do banco de dados por id")
 	@GetMapping("/{id}")
 	public AcaoModel buscarPorId(@PathVariable Long id) {
 		Acao acao = cadastroAcaoService.buscarPorId(id);
@@ -71,6 +78,7 @@ public class AcaoController {
 		return acaoModelAssembler.toModel(acao);
 	}
 
+	@Operation(summary = "Salva uma nova ação", description = "Salva uma nova ação no banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PostMapping
 	@ResponseStatus(value = HttpStatus.CREATED)
@@ -80,6 +88,7 @@ public class AcaoController {
 		return acaoModelAssembler.toModel(acao);
 	}
 
+	@Operation(summary = "Atualiza uma ação já existente", description = "Atualiza uma ação já existente no banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PutMapping("/{id}")
 	public AcaoModel atualizar(@Valid @RequestBody AcaoInput acaoInput, @PathVariable Long id) {
@@ -90,6 +99,7 @@ public class AcaoController {
 		return acaoModelAssembler.toModel(acao);
 	}
 
+	@Operation(summary = "Deleta uma ação por id", description = "Deleta uma ação por id do banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)

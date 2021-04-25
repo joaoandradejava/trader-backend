@@ -44,6 +44,10 @@ import com.joaoandrade.traderexercicio.domain.service.TraderService;
 import com.joaoandrade.traderexercicio.domain.service.crud.CadastroAcaoService;
 import com.joaoandrade.traderexercicio.domain.service.crud.CadastroTraderService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Trader Controller")
 @RestController
 @RequestMapping("/traders")
 public class TraderController {
@@ -69,6 +73,7 @@ public class TraderController {
 	@Autowired
 	private TraderService traderService;
 
+	@Operation(summary = "Buscar todos os traders", description = "Busca todos os traders do banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping
 	public List<TraderModel> buscarTodos() {
@@ -77,6 +82,7 @@ public class TraderController {
 		return traderModelAssembler.toCollectionModel(lista);
 	}
 
+	@Operation(summary = "Buscar todos os traders por paginação", description = "Busca todos os traders por paginação do banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping("/paginacao")
 	public Page<TraderModel> buscarTodosPorPagintrader(Pageable pageable, String nome, String email) {
@@ -97,6 +103,7 @@ public class TraderController {
 		return converterParaModelPage(page);
 	}
 
+	@Operation(summary = "Buscar trader por id", description = "Busca trader por id do banco de dados")
 	@GetMapping("/{id}")
 	public TraderFullModel buscarPorId(@PathVariable Long id,
 			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
@@ -114,6 +121,7 @@ public class TraderController {
 		return traderAutenticado.getId() != id && !traderAutenticado.isAdmin();
 	}
 
+	@Operation(summary = "Salvar um novo Trader", description = "Salva um novo Trader no banco de dados")
 	@PostMapping
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public TraderModel salvar(@Valid @RequestBody TraderCreateInput traderCreateInput) {
@@ -122,6 +130,7 @@ public class TraderController {
 		return traderModelAssembler.toModel(trader);
 	}
 
+	@Operation(summary = "Atualizar um Trader", description = "Atualiza um Trader no banco de dados")
 	@PutMapping("/{id}")
 	public TraderModel atualizar(@Valid @RequestBody TraderUpdateInput traderUpdateInput, @PathVariable Long id,
 			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
@@ -137,6 +146,7 @@ public class TraderController {
 		return traderModelAssembler.toModel(trader);
 	}
 
+	@Operation(summary = "Deletar um Trader", description = "Deleta um Trader por id no banco de dados")
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void deletarPorId(@PathVariable Long id, @AuthenticationPrincipal TraderAutenticado traderAutenticado) {
@@ -148,6 +158,7 @@ public class TraderController {
 		cadastroTraderService.deletarPorId(id);
 	}
 
+	@Operation(summary = "Comprar Ações", description = "Compra ações")
 	@PutMapping("/{id}/acao")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void comprarAcao(@Valid @RequestBody ComprarAcaoInput comprarAcaoInput, @PathVariable Long id,
@@ -166,6 +177,7 @@ public class TraderController {
 		}
 	}
 
+	@Operation(summary = "Vender ações", description = "Vende ações que o trader possui")
 	@DeleteMapping("/{id}/acao")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void venderAcao(@Valid @RequestBody VenderAcaoInput venderAcaoInput, @PathVariable Long id,
@@ -184,6 +196,7 @@ public class TraderController {
 		}
 	}
 
+	@Operation(summary = "Transferir dinheiro", description = "Transferi o dinheiro para um outro Trader")
 	@PutMapping("/{id}/transferencia-dinheiro")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void transferirDinheiro(@Valid @RequestBody TransferirDinheiroInput transferirDinheiroInput,
@@ -204,6 +217,7 @@ public class TraderController {
 		traderService.transferirDinheiro(trader, destinatario, transferirDinheiroInput.getValor());
 	}
 
+	@Operation(summary = "Mudar senha", description = "Muda a senha do trader logado no sistema")
 	@PutMapping("/senha")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void altarSenha(@Valid @RequestBody MudarSenhaInput mudarSenhaInput,
