@@ -35,6 +35,16 @@ public class ItemAcao {
 		this.quantidade = quantidade;
 	}
 
+	public void adicionarQuantidade(Integer quantidade) {
+		this.quantidade += quantidade;
+
+	}
+
+	public void subtrairQuantidade(Integer quantidade) {
+		this.quantidade -= quantidade;
+
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

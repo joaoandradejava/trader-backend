@@ -15,6 +15,6 @@ public interface AcaoRepository extends JpaRepository<Acao, Long> {
 
 	public Optional<Acao> findByNome(String nome);
 
-	@Query("select a from Acao a where a.nome like %?1%")
+	@Query("select a from Acao a where lower(a.nome) like lower(concat('%', ?1, '%'))")
 	public Page<Acao> buscarTodosPorPaginacaoENome(String nome, Pageable pageable);
 }
