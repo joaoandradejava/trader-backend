@@ -38,6 +38,7 @@ public class Trader {
 	private Set<ItemAcao> acoes = new HashSet<>();
 
 	public Trader() {
+		adicionarPerfil(Perfil.TRADER);
 	}
 
 	public Trader(Long id, String nome, String email, String senha, BigDecimal saldo) {
@@ -47,6 +48,7 @@ public class Trader {
 		this.email = email;
 		this.senha = senha;
 		this.saldo = saldo;
+		adicionarPerfil(Perfil.TRADER);
 	}
 
 	public Long getId() {
@@ -103,6 +105,14 @@ public class Trader {
 
 	public void setAcoes(Set<ItemAcao> acoes) {
 		this.acoes = acoes;
+	}
+
+	public void adicionarPerfil(Perfil perfil) {
+		this.perfis.add(perfil);
+	}
+
+	public void removerPerfil(Perfil perfil) {
+		this.perfis.remove(perfil);
 	}
 
 	public boolean isTemDinheiroSuficienteParaComprarAcao(Acao acao, Integer quantidade) {

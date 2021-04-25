@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +26,16 @@ import com.joaoandrade.traderexercicio.api.assembler.TraderModelAssembler;
 import com.joaoandrade.traderexercicio.api.disassembler.TraderCreateInputDisassembler;
 import com.joaoandrade.traderexercicio.api.disassembler.TraderUpdateInputDisassembler;
 import com.joaoandrade.traderexercicio.api.input.ComprarAcaoInput;
+import com.joaoandrade.traderexercicio.api.input.MudarSenhaInput;
 import com.joaoandrade.traderexercicio.api.input.TraderCreateInput;
 import com.joaoandrade.traderexercicio.api.input.TraderUpdateInput;
 import com.joaoandrade.traderexercicio.api.input.TransferirDinheiroInput;
 import com.joaoandrade.traderexercicio.api.input.VenderAcaoInput;
 import com.joaoandrade.traderexercicio.api.model.TraderFullModel;
 import com.joaoandrade.traderexercicio.api.model.TraderModel;
+import com.joaoandrade.traderexercicio.core.security.TraderAutenticado;
 import com.joaoandrade.traderexercicio.domain.exception.AcaoNaoEncontradaException;
+import com.joaoandrade.traderexercicio.domain.exception.AcessoNegadoException;
 import com.joaoandrade.traderexercicio.domain.exception.NegocioException;
 import com.joaoandrade.traderexercicio.domain.exception.TraderNaoEncontradoException;
 import com.joaoandrade.traderexercicio.domain.model.Acao;
@@ -64,6 +69,7 @@ public class TraderController {
 	@Autowired
 	private TraderService traderService;
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping
 	public List<TraderModel> buscarTodos() {
 		List<Trader> lista = cadastroTraderService.buscarTodos();
@@ -71,6 +77,7 @@ public class TraderController {
 		return traderModelAssembler.toCollectionModel(lista);
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping("/paginacao")
 	public Page<TraderModel> buscarTodosPorPagintrader(Pageable pageable, String nome, String email) {
 		Page<Trader> page;
@@ -91,10 +98,20 @@ public class TraderController {
 	}
 
 	@GetMapping("/{id}")
-	public TraderFullModel buscarPorId(@PathVariable Long id) {
+	public TraderFullModel buscarPorId(@PathVariable Long id,
+			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para buscar os dados de outro Trader"));
+		}
+
 		Trader trader = cadastroTraderService.buscarPorId(id);
 
 		return traderFullModelAssembler.toModel(trader);
+	}
+
+	private boolean isNaoTemAutorizacao(Long id, TraderAutenticado traderAutenticado) {
+		return traderAutenticado.getId() != id && !traderAutenticado.isAdmin();
 	}
 
 	@PostMapping
@@ -106,7 +123,13 @@ public class TraderController {
 	}
 
 	@PutMapping("/{id}")
-	public TraderModel atualizar(@Valid @RequestBody TraderUpdateInput traderUpdateInput, @PathVariable Long id) {
+	public TraderModel atualizar(@Valid @RequestBody TraderUpdateInput traderUpdateInput, @PathVariable Long id,
+			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para atualizar os dados de outro Trader"));
+		}
+
 		Trader trader = cadastroTraderService.buscarPorId(id);
 		traderUpdateInputDisassembler.copyToDomainModel(traderUpdateInput, trader);
 		trader = cadastroTraderService.salvar(trader);
@@ -116,13 +139,24 @@ public class TraderController {
 
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	public void deletarPorId(@PathVariable Long id) {
+	public void deletarPorId(@PathVariable Long id, @AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para deletar a conta de outro Trader"));
+		}
+
 		cadastroTraderService.deletarPorId(id);
 	}
 
 	@PutMapping("/{id}/acao")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	public void comprarAcao(@Valid @RequestBody ComprarAcaoInput comprarAcaoInput, @PathVariable Long id) {
+	public void comprarAcao(@Valid @RequestBody ComprarAcaoInput comprarAcaoInput, @PathVariable Long id,
+			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para comprar ações de outro Trader"));
+		}
+
 		try {
 			Acao acao = cadastroAcaoService.buscarPorId(comprarAcaoInput.getId());
 			Trader trader = cadastroTraderService.buscarPorId(id);
@@ -134,7 +168,13 @@ public class TraderController {
 
 	@DeleteMapping("/{id}/acao")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
-	public void venderAcao(@Valid @RequestBody VenderAcaoInput venderAcaoInput, @PathVariable Long id) {
+	public void venderAcao(@Valid @RequestBody VenderAcaoInput venderAcaoInput, @PathVariable Long id,
+			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para vender as ações de outro Trader"));
+		}
+
 		try {
 			Acao acao = cadastroAcaoService.buscarPorId(venderAcaoInput.getId());
 			Trader trader = cadastroTraderService.buscarPorId(id);
@@ -147,7 +187,12 @@ public class TraderController {
 	@PutMapping("/{id}/transferencia-dinheiro")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void transferirDinheiro(@Valid @RequestBody TransferirDinheiroInput transferirDinheiroInput,
-			@PathVariable Long id) {
+			@PathVariable Long id, @AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para transferir o dinheiro da conta de outro Trader"));
+		}
+
 		Trader trader = cadastroTraderService.buscarPorId(id);
 		Trader destinatario;
 		try {
@@ -157,6 +202,14 @@ public class TraderController {
 		}
 
 		traderService.transferirDinheiro(trader, destinatario, transferirDinheiroInput.getValor());
+	}
+
+	@PutMapping("/senha")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	public void altarSenha(@Valid @RequestBody MudarSenhaInput mudarSenhaInput,
+			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		traderService.alterarSenha(traderAutenticado.getId(), mudarSenhaInput.getSenhaAtual(),
+				mudarSenhaInput.getNovaSenha());
 	}
 
 	private Page<TraderModel> converterParaModelPage(Page<Trader> page) {

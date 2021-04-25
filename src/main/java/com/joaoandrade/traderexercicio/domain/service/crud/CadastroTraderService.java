@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +61,7 @@ public class CadastroTraderService {
 		entityManager.detach(trader);
 		if (trader.getId() == null) {
 			trader.setSaldo(new BigDecimal(0.0));
+			trader.setSenha(new BCryptPasswordEncoder().encode(trader.getSenha()));
 		}
 		emailTraderValidator.validarEmail(trader);
 

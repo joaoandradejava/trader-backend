@@ -2,15 +2,21 @@ package com.joaoandrade.traderexercicio.domain.service;
 
 import java.math.BigDecimal;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.joaoandrade.traderexercicio.domain.exception.NegocioException;
 import com.joaoandrade.traderexercicio.domain.model.Acao;
 import com.joaoandrade.traderexercicio.domain.model.Trader;
+import com.joaoandrade.traderexercicio.domain.service.crud.CadastroTraderService;
 
 @Service
 public class TraderService {
+
+	@Autowired
+	private CadastroTraderService cadastroTraderService;
 
 	@Transactional
 	public void comprarAcao(Trader trader, Acao acao, Integer quantidade) {
@@ -50,5 +56,17 @@ public class TraderService {
 		}
 
 		trader.transferirDinheiro(destinatario, valor);
+	}
+
+	@Transactional
+	public void alterarSenha(Long id, String senhaAtual, String novaSenha) {
+		Trader trader = cadastroTraderService.buscarPorId(id);
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+		if (!bCryptPasswordEncoder.matches(senhaAtual, trader.getSenha())) {
+			throw new NegocioException(String.format("Senha atual inserida não corresponde a sua senha!"));
+		}
+
+		trader.setSenha(bCryptPasswordEncoder.encode(novaSenha));
 	}
 }

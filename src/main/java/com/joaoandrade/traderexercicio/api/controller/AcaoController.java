@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,6 +71,7 @@ public class AcaoController {
 		return acaoModelAssembler.toModel(acao);
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PostMapping
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public AcaoModel salvar(@Valid @RequestBody AcaoInput acaoInput) {
@@ -78,6 +80,7 @@ public class AcaoController {
 		return acaoModelAssembler.toModel(acao);
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@PutMapping("/{id}")
 	public AcaoModel atualizar(@Valid @RequestBody AcaoInput acaoInput, @PathVariable Long id) {
 		Acao acao = cadastroAcaoService.buscarPorId(id);
@@ -87,6 +90,7 @@ public class AcaoController {
 		return acaoModelAssembler.toModel(acao);
 	}
 
+	@PreAuthorize("hasAnyRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public void deletarPorId(@PathVariable Long id) {

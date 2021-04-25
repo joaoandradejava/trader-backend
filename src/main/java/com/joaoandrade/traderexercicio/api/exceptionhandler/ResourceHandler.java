@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.joaoandrade.traderexercicio.domain.exception.AcessoNegadoException;
 import com.joaoandrade.traderexercicio.domain.exception.EntidadeEmUsoException;
 import com.joaoandrade.traderexercicio.domain.exception.NegocioException;
 import com.joaoandrade.traderexercicio.domain.exception.ObjetoNaoEncontradoException;
@@ -35,6 +37,28 @@ public class ResourceHandler extends ResponseEntityExceptionHandler {
 		Error error = Error.ERRO_INTERNO_NO_SERVIDOR;
 		ProblemDetail problemDetail = new ProblemDetail(error.getType(), error.getTitle(), status.value(),
 				DEFAULT_MESSAGE, DEFAULT_MESSAGE);
+
+		return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), status, request);
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+		HttpStatus status = HttpStatus.FORBIDDEN;
+		Error error = Error.ACESSO_NEGADO;
+		String message = "Acesso negado!";
+		ProblemDetail problemDetail = new ProblemDetail(error.getType(), error.getTitle(), status.value(), message,
+				message);
+
+		return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), status, request);
+	}
+
+	@ExceptionHandler(AcessoNegadoException.class)
+	public ResponseEntity<Object> handleAcessoNegado(AcessoNegadoException ex, WebRequest request) {
+		HttpStatus status = HttpStatus.FORBIDDEN;
+		Error error = Error.ACESSO_NEGADO;
+		String message = ex.getMessage();
+		ProblemDetail problemDetail = new ProblemDetail(error.getType(), error.getTitle(), status.value(), message,
+				message);
 
 		return handleExceptionInternal(ex, problemDetail, new HttpHeaders(), status, request);
 	}

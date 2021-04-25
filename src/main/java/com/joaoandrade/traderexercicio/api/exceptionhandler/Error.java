@@ -9,7 +9,9 @@ public enum Error {
 	NENHUM_RECURSO_ENCONTRADO("recurso-nao-encontrado", "Recurso não encontrado"),
 	ERRO_DESSERIALIZACAO_JSON("erro-desserializacao-json", "Erro ao tentar desserializar o JSON"),
 	PROPRIEDADE_INEXISTENTE("propriedade-inexistente", "Propriedade inexistente"),
-	ERRO_INTERNO_NO_SERVIDOR("erro-interno-no-servidor", "Erro interno no servidor");
+	ERRO_INTERNO_NO_SERVIDOR("erro-interno-no-servidor", "Erro interno no servidor"),
+	CREDENCIAIS_INCORRETAS("credenciais-incorretas", "Credenciais incorretas"),
+	ACESSO_NEGADO("acesso-negado", "Acesso Negado");
 
 	private String type;
 	private String title;

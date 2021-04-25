@@ -7,7 +7,7 @@ insert into acao (nome, preco) values
 ('BMW', 179), ('Google', 58), ('Apple', 171), ('Twitter', 13);
 
 insert into trader(nome, email, senha, saldo) values
-('João Andrade', 'john@gmail.com', '123', 1000), ('Leonardo Leitão', 'leo@gmail.com', '123', 1000);
+('João Andrade', 'john@gmail.com', '$2a$10$liJUmBjXY4GmPjEw50lz9OM4dldXdY7s1zXB5ch1Jb/ZD/MEQZ6m6', 1000), ('Leonardo Leitão', 'leo@gmail.com', '$2a$10$liJUmBjXY4GmPjEw50lz9OM4dldXdY7s1zXB5ch1Jb/ZD/MEQZ6m6', 1000);
 
 insert into perfil(trader_id, perfis) values
 (1, 'TRADER'), (1, 'ADMIN'),
