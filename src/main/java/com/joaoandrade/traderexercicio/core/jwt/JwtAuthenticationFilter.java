@@ -52,12 +52,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		String token = "Bearer " + jwtUtil.gerarTokenJwt(traderAutenticado.getUsername());
 		response.setHeader("Authorization", token);
 		response.setContentType("application/json");
-		response.getWriter().write(responseJson(token, traderAutenticado.isAdmin()));
+		response.getWriter().write(responseJson(traderAutenticado.getId(), token, traderAutenticado.isAdmin()));
 	}
 
-	private String responseJson(String token, boolean isAdmin) {
+	private String responseJson(Long id, String token, boolean isAdmin) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{\n");
+		builder.append("\"id\": \"" + id + "\",\n");
 		builder.append("\"token\": \"" + token + "\",\n");
 		builder.append("\"isAdmin\": \"" + isAdmin + "\"\n");
 		builder.append("}");
