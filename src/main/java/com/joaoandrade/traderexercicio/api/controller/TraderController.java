@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.joaoandrade.traderexercicio.api.assembler.TraderFullModelAssembler;
 import com.joaoandrade.traderexercicio.api.assembler.TraderModelAssembler;
+import com.joaoandrade.traderexercicio.api.assembler.TraderResumoModelAssembler;
 import com.joaoandrade.traderexercicio.api.disassembler.TraderCreateInputDisassembler;
 import com.joaoandrade.traderexercicio.api.disassembler.TraderUpdateInputDisassembler;
 import com.joaoandrade.traderexercicio.api.input.ComprarAcaoInput;
@@ -33,6 +34,7 @@ import com.joaoandrade.traderexercicio.api.input.TransferirDinheiroInput;
 import com.joaoandrade.traderexercicio.api.input.VenderAcaoInput;
 import com.joaoandrade.traderexercicio.api.model.TraderFullModel;
 import com.joaoandrade.traderexercicio.api.model.TraderModel;
+import com.joaoandrade.traderexercicio.api.model.TraderResumoModel;
 import com.joaoandrade.traderexercicio.core.security.TraderAutenticado;
 import com.joaoandrade.traderexercicio.domain.exception.AcaoNaoEncontradaException;
 import com.joaoandrade.traderexercicio.domain.exception.AcessoNegadoException;
@@ -72,6 +74,9 @@ public class TraderController {
 
 	@Autowired
 	private TraderService traderService;
+
+	@Autowired
+	private TraderResumoModelAssembler traderResumoModelAssembler;
 
 	@Operation(summary = "Buscar todos os traders", description = "Busca todos os traders do banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
@@ -115,6 +120,20 @@ public class TraderController {
 		Trader trader = cadastroTraderService.buscarPorId(id);
 
 		return traderFullModelAssembler.toModel(trader);
+	}
+
+	@Operation(summary = "Buscar trader resumido por id", description = "Busca trader por id do banco de dados")
+	@GetMapping("/resumo/{id}")
+	public TraderResumoModel buscarResumoPorId(@PathVariable Long id,
+			@AuthenticationPrincipal TraderAutenticado traderAutenticado) {
+		if (isNaoTemAutorizacao(id, traderAutenticado)) {
+			throw new AcessoNegadoException(
+					String.format("Você não tem autorização para buscar os dados de outro Trader"));
+		}
+
+		Trader trader = cadastroTraderService.buscarPorId(id);
+
+		return traderResumoModelAssembler.toModel(trader);
 	}
 
 	private boolean isNaoTemAutorizacao(Long id, TraderAutenticado traderAutenticado) {
