@@ -33,7 +33,6 @@ public class ResourceHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Object> handleErroInternoNoServidor(Exception ex, WebRequest request) {
-		ex.printStackTrace();
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		Error error = Error.ERRO_INTERNO_NO_SERVIDOR;
 		ProblemDetail problemDetail = new ProblemDetail(error.getType(), error.getTitle(), status.value(),
