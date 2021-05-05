@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,17 +24,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.joaoandrade.traderexercicio.api.assembler.TraderFullModelAssembler;
 import com.joaoandrade.traderexercicio.api.assembler.TraderModelAssembler;
+import com.joaoandrade.traderexercicio.api.assembler.TraderModelPaginationAssembler;
 import com.joaoandrade.traderexercicio.api.assembler.TraderResumoModelAssembler;
 import com.joaoandrade.traderexercicio.api.disassembler.TraderCreateInputDisassembler;
 import com.joaoandrade.traderexercicio.api.disassembler.TraderUpdateInputDisassembler;
 import com.joaoandrade.traderexercicio.api.input.ComprarAcaoInput;
 import com.joaoandrade.traderexercicio.api.input.MudarSenhaInput;
+import com.joaoandrade.traderexercicio.api.input.RecuperarSenhaInput;
 import com.joaoandrade.traderexercicio.api.input.TraderCreateInput;
 import com.joaoandrade.traderexercicio.api.input.TraderUpdateInput;
 import com.joaoandrade.traderexercicio.api.input.TransferirDinheiroInput;
 import com.joaoandrade.traderexercicio.api.input.VenderAcaoInput;
 import com.joaoandrade.traderexercicio.api.model.TraderFullModel;
 import com.joaoandrade.traderexercicio.api.model.TraderModel;
+import com.joaoandrade.traderexercicio.api.model.TraderModelPagination;
 import com.joaoandrade.traderexercicio.api.model.TraderResumoModel;
 import com.joaoandrade.traderexercicio.core.security.TraderAutenticado;
 import com.joaoandrade.traderexercicio.domain.exception.AcaoNaoEncontradaException;
@@ -42,6 +46,7 @@ import com.joaoandrade.traderexercicio.domain.exception.NegocioException;
 import com.joaoandrade.traderexercicio.domain.exception.TraderNaoEncontradoException;
 import com.joaoandrade.traderexercicio.domain.model.Acao;
 import com.joaoandrade.traderexercicio.domain.model.Trader;
+import com.joaoandrade.traderexercicio.domain.observer.EsqueciSenhaObserver;
 import com.joaoandrade.traderexercicio.domain.service.TraderService;
 import com.joaoandrade.traderexercicio.domain.service.crud.CadastroAcaoService;
 import com.joaoandrade.traderexercicio.domain.service.crud.CadastroTraderService;
@@ -78,6 +83,12 @@ public class TraderController {
 	@Autowired
 	private TraderResumoModelAssembler traderResumoModelAssembler;
 
+	@Autowired
+	private TraderModelPaginationAssembler traderModelPaginationAssembler;
+
+	@Autowired
+	private ApplicationEventPublisher applicationEventPublisher;
+
 	@Operation(summary = "Buscar todos os traders", description = "Busca todos os traders do banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping
@@ -90,7 +101,7 @@ public class TraderController {
 	@Operation(summary = "Buscar todos os traders por paginação", description = "Busca todos os traders por paginação do banco de dados. NIVEL DE ACESSO: ADMIN")
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@GetMapping("/paginacao")
-	public Page<TraderModel> buscarTodosPorPagintrader(Pageable pageable, String nome, String email) {
+	public Page<TraderModelPagination> buscarTodosPorPagintrader(Pageable pageable, String nome, String email) {
 		Page<Trader> page;
 		if (StringUtils.hasLength(nome)) {
 			page = cadastroTraderService.buscarTodosPorPaginacaoENome(pageable, nome);
@@ -245,7 +256,35 @@ public class TraderController {
 				mudarSenhaInput.getNovaSenha());
 	}
 
-	private Page<TraderModel> converterParaModelPage(Page<Trader> page) {
-		return page.map(trader -> traderModelAssembler.toModel(trader));
+	@Operation(summary = "Dar permissão de Administrador", description = "Dar permissão de Administrador a um trader")
+	@PutMapping("/{id}/admin")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	public void darPermissaoAdmin(@PathVariable Long id) {
+		traderService.darPermissaoAdmin(id);
+	}
+
+	@Operation(summary = "Remove permissão de Administrador", description = "Remove permissão de Administrador de um trader")
+	@DeleteMapping("/{id}/admin")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	public void removerPermissaoAdmin(@PathVariable Long id) {
+		traderService.removerPermissaoAdmin(id);
+	}
+
+	@Operation(summary = "Recupera a senha esquecida", description = "Recupera a senha esquecida do trader")
+	@PutMapping("/esqueci-senha")
+	@ResponseStatus(value = HttpStatus.NO_CONTENT)
+	public void recuperarSenhaEsquecida(@Valid @RequestBody RecuperarSenhaInput recuperarSenhaInput) {
+		EsqueciSenhaObserver esqueciSenhaObserver = traderService
+				.recuperarSenhaEsquecida(recuperarSenhaInput.getEmail());
+
+		applicationEventPublisher.publishEvent(esqueciSenhaObserver);
+	}
+
+	private Page<TraderModelPagination> converterParaModelPage(Page<Trader> page) {
+		return page.map(trader -> traderModelPaginationAssembler.toModel(trader)
+
+		);
 	}
 }

@@ -206,6 +206,10 @@ public class Trader {
 		this.saldo = this.saldo.add(valor);
 	}
 
+	public boolean isAdmin() {
+		return this.getPerfis().contains(Perfil.ADMIN);
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

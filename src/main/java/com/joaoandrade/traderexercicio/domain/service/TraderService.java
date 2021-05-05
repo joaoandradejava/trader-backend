@@ -1,6 +1,7 @@
 package com.joaoandrade.traderexercicio.domain.service;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.joaoandrade.traderexercicio.domain.exception.NegocioException;
 import com.joaoandrade.traderexercicio.domain.model.Acao;
 import com.joaoandrade.traderexercicio.domain.model.Trader;
+import com.joaoandrade.traderexercicio.domain.model.enumeration.Perfil;
+import com.joaoandrade.traderexercicio.domain.observer.EsqueciSenhaObserver;
 import com.joaoandrade.traderexercicio.domain.service.crud.CadastroTraderService;
 
 @Service
@@ -68,5 +71,35 @@ public class TraderService {
 		}
 
 		trader.setSenha(bCryptPasswordEncoder.encode(novaSenha));
+	}
+
+	@Transactional
+	public void darPermissaoAdmin(Long id) {
+		Trader trader = cadastroTraderService.buscarPorId(id);
+
+		trader.adicionarPerfil(Perfil.ADMIN);
+	}
+
+	@Transactional
+	public void removerPermissaoAdmin(Long id) {
+		Trader trader = cadastroTraderService.buscarPorId(id);
+
+		trader.removerPerfil(Perfil.ADMIN);
+	}
+
+	@Transactional
+	public EsqueciSenhaObserver recuperarSenhaEsquecida(String email) {
+		Trader trader = cadastroTraderService.buscarPorEmail(email);
+		Random random = new Random();
+		char[] letrasAleatorias = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', '1', '2', '4', 'c', 'a', 'b', 's' };
+		String novaSenha = "trader-investimentos";
+
+		for (int i = 0; i < letrasAleatorias.length / 2; i++) {
+			novaSenha += letrasAleatorias[random.nextInt(letrasAleatorias.length)];
+		}
+
+		trader.setSenha(new BCryptPasswordEncoder().encode(novaSenha));
+
+		return new EsqueciSenhaObserver(trader, novaSenha);
 	}
 }

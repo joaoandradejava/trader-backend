@@ -27,6 +27,7 @@ import com.joaoandrade.traderexercicio.core.jwt.JwtUtil;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final String[] POST = { "/traders" };
+	private static final String[] PUT = { "/traders/esqueci-senha" };
 
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -48,7 +49,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().cors();
-		http.authorizeRequests().antMatchers(HttpMethod.POST, POST).permitAll().anyRequest().authenticated();
+		http.authorizeRequests().antMatchers(HttpMethod.POST, POST).permitAll().antMatchers(HttpMethod.PUT, PUT)
+				.permitAll().anyRequest().authenticated();
 		http.addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtUtil));
 		http.addFilter(new JwtAuthorizationFilter(authenticationManager(), jwtUtil, userDetailsService));
 
