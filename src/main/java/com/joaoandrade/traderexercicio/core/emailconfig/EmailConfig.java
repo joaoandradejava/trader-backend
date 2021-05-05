@@ -25,7 +25,7 @@ public class EmailConfig {
 		mailSender.setPort(587);
 
 		mailSender.setUsername(emailConfigProperties.getUsuario());
-		mailSender.setPassword(emailConfigProperties.getSenha());
+		mailSender.setPassword("famossisimaJinx");
 
 		Properties props = mailSender.getJavaMailProperties();
 		props.put("mail.transport.protocol", "smtp");
