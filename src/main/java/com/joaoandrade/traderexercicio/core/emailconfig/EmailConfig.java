@@ -21,10 +21,10 @@ public class EmailConfig {
 	@Bean
 	public JavaMailSender javaMailSender() {
 		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-		mailSender.setHost("smtp.gmail.com");
+		mailSender.setHost("smtp.sendgrid.net");
 		mailSender.setPort(587);
 
-		mailSender.setUsername(emailConfigProperties.getUsuario());
+		mailSender.setUsername("apikey");
 		mailSender.setPassword(emailConfigProperties.getSenha());
 
 		Properties props = mailSender.getJavaMailProperties();
@@ -32,6 +32,7 @@ public class EmailConfig {
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.debug", "true");
+		props.put("mail.transport.protocol", "smtp");
 
 		return mailSender;
 	}
