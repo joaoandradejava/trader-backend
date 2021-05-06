@@ -31,6 +31,8 @@ public class CadastroTraderService {
 	@Autowired
 	private EmailTraderValidator emailTraderValidator;
 
+	private BigDecimal valorDefaultSaldo = new BigDecimal(1000.00);
+
 	public List<Trader> buscarTodos() {
 		return repository.findAll();
 	}
@@ -60,7 +62,7 @@ public class CadastroTraderService {
 	public Trader salvar(Trader trader) {
 		entityManager.detach(trader);
 		if (trader.getId() == null) {
-			trader.setSaldo(new BigDecimal(0.0));
+			trader.setSaldo(valorDefaultSaldo);
 			trader.setSenha(new BCryptPasswordEncoder().encode(trader.getSenha()));
 		}
 		emailTraderValidator.validarEmail(trader);
